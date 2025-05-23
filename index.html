@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TETRIS</title>
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/title.css">
+        <link rel="stylesheet" href="css/game.css">
+        <link rel="stylesheet" href="css/gameOver.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="js/main.js" defer></script>
+        <script src="js/block.js" defer></script>
+        <script src="js/game.js" defer></script>
+        <script src="js/draw.js" defer></script>
+        <script src="js/sound.js" defer></script>
+    </head>
+
+    <body>
+        <!-- タイトル画面 -->
+        <div id="titleScreen">
+            <h1 id="gameTitle">TETRIS</h1>
+            <button id="startButton">スタート</button>
+        </div>
+
+        <!-- ゲーム画面 -->
+        <div id="gameScreen" style="display: none;">
+            <div class="boxes">
+                <div class="holdGroup">
+                    <div>HOLD</div>
+                    <canvas id="holdBox" width="120" height="120"></canvas>
+                    <div id="score">スコア: 0</div>
+                </div>
+                <canvas id="tetrisCanvas" width="300" height="600"></canvas>
+                <div class="nextGropu">
+                    <div>NEXT</div>
+                    <canvas id="nextTetrisBox" width="120" height="360"></canvas>
+                </div>
+            </div>
+            <button id="startBackButton">X</button>
+        </div>
+
+        <!-- ゲームオーバー画面 -->
+        <div id="gameOverScreen" style="display: none;">
+            <h1 id="gameOver">ゲームオーバー</h1>
+            <div id="scoreFinal">スコア: 0</div>
+            <div class="gameOverButtons">
+                <button id="backButton">タイトルへ</button>
+                <button id="restartButton">リスタート</button>
+            </div>
+        </div>
+    </body>
+
+</html>

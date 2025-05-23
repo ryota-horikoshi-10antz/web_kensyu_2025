@@ -1,0 +1,33 @@
+/* プレイ画面 */
+#startBackButton {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    color: white;
+}
+
+#startBackButton:hover {
+    background-color: #666;
+}
+
+
+.boxes {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+
+#holdBox {
+    border: 2px solid white;
+    background-color: #222;
+    order: -1;
+}
+
+#nextTetrisBox {
+    border: 2px solid white;
+    background-color: #222;
+    order: 1;
+}

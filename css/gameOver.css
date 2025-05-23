@@ -1,0 +1,15 @@
+/* ゲームオーバー画面 */
+.gameOverButtons {
+    display: flex;
+    gap: 60px;
+}
+
+#gameOver {
+    font-size: 4rem;
+    margin-bottom: 10px;
+}
+
+#scoreFinal {
+    font-size: 3rem;
+    margin-bottom: 30px;
+}
