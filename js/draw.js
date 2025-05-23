@@ -1,4 +1,6 @@
-//描画全体
+//描画
+
+//全体描画
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -16,7 +18,6 @@ function draw() {
             if (currentBlock[i][j]) {
                 let drawCellX = currentX + j;
                 let drawCellY = ghostY + i;
-
                 if (drawCellY >= 0 && drawCellY < ROWS &&
                     drawCellX >= 0 && drawCellX < COLS) {
                     drawBlock(drawCellX, drawCellY, ghostColor);
@@ -24,6 +25,7 @@ function draw() {
             }
         }
     }
+
 
     for (let i = 0; i < 4; i++) {
         for (let j = 0; j < 4; j++) {
@@ -44,16 +46,7 @@ function drawBlock(x, y, color) {
     ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
 }
 
-//落下予測表示
-function calculateGhostY() {
-    let testY = currentY;
-    while (!collision(currentBlock, currentX, testY + 1)) {
-        testY++;
-    }
-    return testY;
-}
-
-//ホールド表示
+//ホールド
 function drawHold() {
     const holdCanvas = document.getElementById("holdBox");
     const holdCtx = holdCanvas.getContext("2d");
@@ -98,7 +91,7 @@ function drawHold() {
     }
 }
 
-//次に落下するミノの表示
+//次の落下ミノ
 function drawNext() {
     const nextCanvas = document.getElementById("nextTetrisBox");
     const nextCtx = nextCanvas.getContext("2d");
@@ -125,7 +118,10 @@ function drawNext() {
 
         const blockWidth = (maxX - minX + 1) * blockSize;
         const blockHeight = (maxY - minY + 1) * blockSize;
+
+
         const offsetX = (nextCanvas.width - blockWidth) / 2;
+
         const areaTop = idx * sectionHeight;
         const offsetY = areaTop + (sectionHeight - blockHeight) / 2;
 
@@ -145,7 +141,7 @@ function drawNext() {
     });
 }
 
-//内部枠線表示
+//内部枠線
 function drawGrid() {
     ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
     ctx.lineWidth = 1;
@@ -163,4 +159,13 @@ function drawGrid() {
         ctx.lineTo(COLS * BLOCK_SIZE, y * BLOCK_SIZE);
         ctx.stroke();
     }
+}
+
+//影描画計算
+function calculateGhostY() {
+    let testY = currentY;
+    while (!collision(currentBlock, currentX, testY + 1)) {
+        testY++;
+    }
+    return testY;
 }

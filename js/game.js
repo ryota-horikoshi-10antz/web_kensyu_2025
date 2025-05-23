@@ -88,7 +88,7 @@ function spawnBlock() {
     }
 }
 
-//ミノの順番管理
+//ミノランダム
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -96,7 +96,7 @@ function shuffle(array) {
     }
 }
 
-//7つのミノを袋に入れ、その中からランダムで出す
+//7つを１つのバッグに入れ、その中から取り出す
 function refillBag() {
     const newBag = [0, 1, 2, 3, 4, 5, 6];
     shuffle(newBag);
@@ -124,11 +124,11 @@ function update() {
     draw();
 }
 
-//ミノ落下スピード変更
+//落下スピード管理
 function updateGameSpeed() {
-    const scoreInCycle = score % ((INITIAL_DROP_INTERVAL - MIN_DROP_INTERVAL) / DROP_INTERVAL_DECREMENT + 1) * SCORE_INCREMENT_FOR_SPEED_CHANGE;
-    const stepsTaken = Math.floor(scoreInCycle / SCORE_INCREMENT_FOR_SPEED_CHANGE);
-    const newInterval = INITIAL_DROP_INTERVAL - (stepsTaken * DROP_INTERVAL_DECREMENT);
+    let scoreInCycle = score % ((INITIAL_DROP_INTERVAL - MIN_DROP_INTERVAL) / DROP_INTERVAL_DECREMENT + 1) * SCORE_INCREMENT_FOR_SPEED_CHANGE;
+    let stepsTaken = Math.floor(scoreInCycle / SCORE_INCREMENT_FOR_SPEED_CHANGE);
+    let newInterval = INITIAL_DROP_INTERVAL - (stepsTaken * DROP_INTERVAL_DECREMENT);
 
     if (newInterval !== currentDropInterval) {
         currentDropInterval = newInterval;
@@ -178,6 +178,19 @@ function handleKey(e) {
     draw();
 }
 
+//ハードドロップ
+function hardDrop() {
+    playSound("drop");
+    while (!collision(currentBlock, currentX, currentY + 1)) {
+        currentY++;
+    }
+    mergeBlock();
+    spawnBlock();
+    clearLines();
+
+    draw();
+}
+
 //衝突判定
 function collision(block, x, y) {
     for (let i = 0; i < 4; i++) {
@@ -192,44 +205,6 @@ function collision(block, x, y) {
         }
     }
     return false;
-}
-
-//壁端でのミノの回転操作
-function tryWallKicks(rotatedShape) {
-    let kickTests;
-    if (currentShape == 1) { //Oのとき
-        if (!collision(rotatedShape, currentX, currentY)) {
-            currentBlock = rotatedShape;
-        }
-        return;
-    }
-
-    if (currentShape == 0) {//Iのとき
-        kickTests = [
-            { x: 0, y: 0 },
-            { x: -1, y: 0 },
-            { x: 1, y: 0 },
-            { x: -2, y: 0 },
-            { x: 2, y: 0 }
-        ];
-    } else {//I,O以外
-        kickTests = [
-            { x: 0, y: 0 },
-            { x: -1, y: 0 },
-            { x: 1, y: 0 }
-        ];
-    }
-
-    for (const kick of kickTests) {
-        const newX = currentX + kick.x;
-        const newY = currentY + kick.y;
-        if (!collision(rotatedShape, newX, newY)) {
-            currentBlock = rotatedShape;
-            currentX = newX;
-            currentY = newY;
-            return;
-        }
-    }
 }
 
 //ミノ設置
@@ -265,6 +240,7 @@ function clearLines() {
     let linesCleared = 0;
     for (let y = ROWS - 1; y >= 0; y--) {
         if (field[y].every(cell => cell != null && cell != 0)) {
+            field.splice(y, 1);
             field.unshift(Array(COLS).fill(null));
             linesCleared++;
             y++;
@@ -299,17 +275,42 @@ function clearLines() {
     }
 }
 
-//ハードドロップ
-function hardDrop() {
-    playSound("drop");
-    while (!collision(currentBlock, currentX, currentY + 1)) {
-        currentY++;
+//壁際回転
+function tryWallKicks(rotatedShape) {
+    let kickTests;
+    if (currentShape == 1) { //Oのとき
+        if (!collision(rotatedShape, currentX, currentY)) {
+            currentBlock = rotatedShape;
+        }
+        return;
     }
-    mergeBlock();
-    spawnBlock();
-    clearLines();
 
-    draw();
+    if (currentShape == 0) {
+        kickTests = [//Iのとき
+            { x: 0, y: 0 },
+            { x: -1, y: 0 },
+            { x: 1, y: 0 },
+            { x: -2, y: 0 },
+            { x: 2, y: 0 }
+        ];
+    } else {//その他
+        kickTests = [
+            { x: 0, y: 0 },
+            { x: -1, y: 0 },
+            { x: 1, y: 0 }
+        ];
+    }
+
+    for (const kick of kickTests) {
+        const newX = currentX + kick.x;
+        const newY = currentY + kick.y;
+        if (!collision(rotatedShape, newX, newY)) {
+            currentBlock = rotatedShape;
+            currentX = newX;
+            currentY = newY;
+            return;
+        }
+    }
 }
 
 //ゲームオーバー管理
@@ -342,172 +343,3 @@ function holdCurrentBlock() {
 }
 
 
-
-
-
-// //描画全体
-// function draw() {
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-//     for (let y = 0; y < ROWS; y++) {
-//         for (let x = 0; x < COLS; x++) {
-//             if (field[y][x]) drawBlock(x, y, field[y][x]);
-//         }
-//     }
-
-//     const ghostY = calculateGhostY();
-//     const ghostColor = "rgba(255, 255, 255, 0.2)";
-
-//     for (let i = 0; i < 4; i++) {
-//         for (let j = 0; j < 4; j++) {
-//             if (currentBlock[i][j]) {
-//                 let drawCellX = currentX + j;
-//                 let drawCellY = ghostY + i;
-
-//                 if (drawCellY >= 0 && drawCellY < ROWS &&
-//                     drawCellX >= 0 && drawCellX < COLS) {
-//                     drawBlock(drawCellX, drawCellY, ghostColor);
-//                 }
-//             }
-//         }
-//     }
-
-//     for (let i = 0; i < 4; i++) {
-//         for (let j = 0; j < 4; j++) {
-//             if (currentBlock[i][j]) {
-//                 drawBlock(currentX + j, currentY + i, currentColor);
-//             }
-//         }
-//     }
-
-//     drawGrid();
-//     drawHold();
-//     drawNext();
-// }
-
-// //ミノ表示
-// function drawBlock(x, y, color) {
-//     ctx.fillStyle = color;
-//     ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
-// }
-
-// //落下予測表示
-// function calculateGhostY() {
-//     let testY = currentY;
-//     while (!collision(currentBlock, currentX, testY + 1)) {
-//         testY++;
-//     }
-//     return testY;
-// }
-
-// //ホールド表示
-// function drawHold() {
-//     const holdCanvas = document.getElementById("holdBox");
-//     const holdCtx = holdCanvas.getContext("2d");
-//     holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
-
-//     if (holdBlock == null) return;
-
-//     const block = BLOCKS[holdBlock].shape;
-//     const color = BLOCKS[holdBlock].color;
-//     const blockSize = 24;
-
-//     let minX = 4, maxX = -1, minY = 4, maxY = -1;
-//     for (let i = 0; i < 4; i++) {
-//         for (let j = 0; j < 4; j++) {
-//             if (block[i][j]) {
-//                 if (j < minX) minX = j;
-//                 if (j > maxX) maxX = j;
-//                 if (i < minY) minY = i;
-//                 if (i > maxY) maxY = i;
-//             }
-//         }
-//     }
-
-//     const blockWidth = (maxX - minX + 1);
-//     const blockHeight = (maxY - minY + 1);
-
-//     const offsetX = (holdCanvas.width - blockSize * blockWidth) / 2;
-//     const offsetY = (holdCanvas.height - blockSize * blockHeight) / 2;
-
-//     for (let i = minY; i <= maxY; i++) {
-//         for (let j = minX; j <= maxX; j++) {
-//             if (block[i][j]) {
-//                 holdCtx.fillStyle = color;
-//                 holdCtx.fillRect(
-//                     offsetX + (j - minX) * blockSize,
-//                     offsetY + (i - minY) * blockSize,
-//                     blockSize - 1,
-//                     blockSize - 1
-//                 );
-//             }
-//         }
-//     }
-// }
-
-// //次に落下するミノの表示
-// function drawNext() {
-//     const nextCanvas = document.getElementById("nextTetrisBox");
-//     const nextCtx = nextCanvas.getContext("2d");
-//     nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
-
-//     const blockSize = 24;
-//     const sectionHeight = nextCanvas.height / 3;
-
-//     nextQueue.forEach((shapeIndex, idx) => {
-//         const block = BLOCKS[shapeIndex].shape;
-//         const color = BLOCKS[shapeIndex].color;
-
-//         let minX = 4, maxX = -1, minY = 4, maxY = -1;
-//         for (let i = 0; i < 4; i++) {
-//             for (let j = 0; j < 4; j++) {
-//                 if (block[i][j]) {
-//                     minX = Math.min(minX, j);
-//                     maxX = Math.max(maxX, j);
-//                     minY = Math.min(minY, i);
-//                     maxY = Math.max(maxY, i);
-//                 }
-//             }
-//         }
-
-//         const blockWidth = (maxX - minX + 1) * blockSize;
-//         const blockHeight = (maxY - minY + 1) * blockSize;
-//         const offsetX = (nextCanvas.width - blockWidth) / 2;
-//         const areaTop = idx * sectionHeight;
-//         const offsetY = areaTop + (sectionHeight - blockHeight) / 2;
-
-//         for (let i = minY; i <= maxY; i++) {
-//             for (let j = minX; j <= maxX; j++) {
-//                 if (block[i][j]) {
-//                     nextCtx.fillStyle = color;
-//                     nextCtx.fillRect(
-//                         offsetX + (j - minX) * blockSize,
-//                         offsetY + (i - minY) * blockSize,
-//                         blockSize - 1,
-//                         blockSize - 1
-//                     );
-//                 }
-//             }
-//         }
-//     });
-// }
-
-// //内部枠線表示
-// function drawGrid() {
-//     ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-//     ctx.lineWidth = 1;
-
-//     for (let x = 0; x <= COLS; x++) {
-//         ctx.beginPath();
-//         ctx.moveTo(x * BLOCK_SIZE, 0);
-//         ctx.lineTo(x * BLOCK_SIZE, ROWS * BLOCK_SIZE);
-//         ctx.stroke();
-//     }
-
-//     for (let y = 0; y <= ROWS; y++) {
-//         ctx.beginPath();
-//         ctx.moveTo(0, y * BLOCK_SIZE);
-//         ctx.lineTo(COLS * BLOCK_SIZE, y * BLOCK_SIZE);
-//         ctx.stroke();
-//     }
-// }
